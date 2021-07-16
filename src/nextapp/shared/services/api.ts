@@ -38,7 +38,7 @@ interface ApiResponse extends Query {
 // NOTE: This can be called at build time
 const api = async <T extends ApiResponse>(
   query: string,
-  variables: unknown = {},
+  variables: any = {},
   options: ApiOptions = {}
 ): Promise<T> => {
   const settings = {

@@ -11,7 +11,7 @@ const random = require('lodash/random');
 const times = require('lodash/times');
 const express = require('express');
 const cors = require('cors');
-const { addHours, parse, formatISO, subDays } = require('date-fns');
+const { addHours, parse, formatISO, subDays, subHours } = require('date-fns');
 
 const adminApi = require('./admin-api');
 const cert = require('./data/certs');
@@ -25,6 +25,16 @@ const { sample } = require('lodash');
 const app = express();
 const db = new MockDatabase('api-owner', 'dss-loc');
 const port = 4000;
+
+const now = new Date();
+const countDatesDown = (total) => {
+  let back = 0;
+  return () => {
+    back++;
+    return subHours(now, back);
+  };
+};
+const activityDates = countDatesDown(50);
 
 const randomNullValue = () => {
   const isFilled = casual.coin_flip;
@@ -78,6 +88,7 @@ const server = mockServer(schemaWithMocks, {
     allOrganizations: () => new MockList(8, (_, { id }) => ({ id })),
     allOrganizationUnits: () => new MockList(18, (_, { id }) => ({ id })),
     allAccessRequests: () => new MockList(6, (_, { id }) => ({ id })),
+    allActivities: () => new MockList(50, (_, { id }) => ({ id })),
     allNamespaceServiceAccounts: () => new MockList(2, (_, { id }) => ({ id })),
     allGatewayConsumers: () => new MockList(4, (_, { id }) => ({ id })),
     allPlugins: () => new MockList(4, (_, { id }) => ({ id })),
@@ -538,7 +549,41 @@ const server = mockServer(schemaWithMocks, {
     return formatISO(date);
   },
   Activity: () => {
-    return { context: JSON.stringify({ name: 'blah' }) };
+    const type = casual.random_element(['GatewayConfig', 'AccessRequest']);
+    const result = casual.random_element([
+      'completed',
+      'success',
+      'failed',
+      null,
+    ]);
+    let message =
+      type === 'GatewayConfig' ? '' : 'credentials (immediate approval)';
+    let actorProps = {};
+
+    if (type === 'GatewayConfig') {
+      actorProps = {
+        actor: null,
+      };
+    }
+
+    if (result === 'failed') {
+      message =
+        'Failed to Apply Workflow - AssertionError [ERR_ASSERTION]: EnvironmentMissing GWA API prod';
+    }
+
+    return {
+      type: 'GatewayConfig',
+      name: 'N/A',
+      action: 'publish',
+      result,
+      message,
+      refId: '',
+      namespace: db.get('user').namespace,
+      extRefId: casual.uuid,
+      createdAt: activityDates(),
+      context: JSON.stringify({ name: 'blah' }),
+      ...actorProps,
+    };
   },
 });
 
