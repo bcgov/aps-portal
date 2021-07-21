@@ -7,6 +7,7 @@ import {
   Flex,
   Grid,
   Heading,
+  Tag,
   Text,
   VStack,
 } from '@chakra-ui/react';
@@ -23,19 +24,32 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ data }) => {
   return (
     <Flex align="center" p={2} bgColor="white">
       <ActivityIcon result={data.result} />
-      <VStack align="left" mx={1}>
+      <VStack align="left" mx={2}>
         <Flex align="center">
           <Text fontSize="sm">
-            <Text
+            {data.actor && (
+              <Text
+                as="span"
+                pr={1}
+                color="#4183c4"
+                fontWeight={600}
+                whiteSpace="nowrap"
+                textOverflow="ellipsis"
+                overflow="hidden"
+              >
+                {data.actor.name}
+              </Text>
+            )}
+            <Tag
               as="span"
-              color="#4183c4"
-              fontWeight={600}
-              whiteSpace="nowrap"
-              textOverflow="ellipsis"
-              overflow="hidden"
+              mr={2}
+              fontWeight="bold"
+              textTransform="uppercase"
+              colorScheme="yellow"
+              size="sm"
             >
-              {data.actor?.name}
-            </Text>
+              {data.action}
+            </Tag>
             <Text as="span">{data.message}</Text>
             <Text
               as="time"

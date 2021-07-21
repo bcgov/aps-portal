@@ -16,10 +16,11 @@ const ActivityListItem: React.FC<ActivityListItemProps> = ({ data }) => {
         <Heading size="sm">{data.title}</Heading>
       </Box>
       <VStack
-        divider={<StackDivider />}
+        divider={<StackDivider mt={0} />}
         spacing={2}
         align="stretch"
         bgColor="white"
+        py={2}
       >
         {data.activities.map((a) => (
           <ActivityItem key={uid(a.id)} data={a} />
